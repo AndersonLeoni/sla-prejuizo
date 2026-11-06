@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------------------
+# DADO CONFIDENCIAL: nada daqui pode entrar no repositorio.
+#
+# O payload (data/) e o HTML montado (dist/) contem nome de colaborador com metrica
+# individual de produtividade (LGPD), valor de prejuizo, chaves de chamado e resumos com
+# localizadores de reserva. Uma vez comitado, o dado fica no historico do git para sempre:
+# apagar o arquivo depois NAO resolve. Este arquivo existe desde o primeiro commit por isso.
+# ---------------------------------------------------------------------------
+data/
+dist/
+
+# credenciais
+config.json
+.env
+*.token
+*.pem
+
+# ruido de ferramenta
+node_modules/
+npm-debug.log*
+*.tmp
+*.bak
+*.parcial
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,5 @@
+{
+  "_leia": "Copie para config.json se precisar mudar a instancia. config.json e ignorado pelo git. O TOKEN NAO ENTRA AQUI: ele vem das variaveis de ambiente JIRA_EMAIL e JIRA_TOKEN.",
+
+  "baseUrl": "https://cvccorp.atlassian.net"
+}

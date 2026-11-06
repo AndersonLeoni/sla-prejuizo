@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#0b6db5">
+<title>SLA de atendimento · Painel de prejuízo TI · CVC Corp — Uso interno (validação)</title>
+<style>
+@@CSS@@
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <button type="button" class="side-toggle" id="sideToggle" aria-expanded="true" aria-controls="sideNav"
+    aria-label="Recolher menu" title="Recolher menu">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+  </button>
+  <div class="side-brand">
+    <div class="av"><img id="logoCvc" src="@@LOGOCVC@@" alt="CVC"></div>
+    <div>
+      <div class="t">SLA de atendimento</div>
+      <div class="s">SDPREJ &middot; tratativa da TI por analista e ciclo do chamado</div>
+      <div class="tags"><span class="tag y">Trend Operadora</span><span class="tag">CVC Corp</span></div>
+    </div>
+  </div>
+  <nav class="side-nav" id="sideNav" role="tablist" aria-label="Telas" aria-orientation="vertical">
+    <button type="button" role="tab" id="tab-atu" aria-selected="true" aria-controls="view-atu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 2.5h5M12 2.5v3.5"/></svg>
+      <span>Tempo de atuação</span></button>
+    <button type="button" role="tab" id="tab-trat" aria-selected="false" aria-controls="view-trat">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 11l2 2 4-4"/></svg>
+      <span>Tratativa (tempo corrido)</span></button>
+    <button type="button" role="tab" id="tab-cap" aria-selected="false" aria-controls="view-cap">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 15l2.5 2.5L16 13"/></svg>
+      <span>Capacidade por dia</span></button>
+    <button type="button" role="tab" id="tab-sla" aria-selected="false" aria-controls="view-sla">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>
+      <span>Ciclo do chamado</span></button>
+  </nav>
+  <div class="side-foot">
+    <span class="side-clock" id="sideClock" role="img" aria-label="Data da extração">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    </span>
+    <span class="chip" id="chipGer"></span>
+@@LINKPAINEL@@
+    <button class="btn" id="themeBtn" aria-label="Alternar tema claro/escuro" title="Alternar tema claro/escuro">◐<span class="lbl"> Tema</span></button>
+  </div>
+</aside>
+<main class="main">
+<div class="wrap">
+
+<div class="conf">
+  <b>CONFIDENCIAL — USO INTERNO CVC CORP.</b>
+  Contém valores de prejuízo, chaves de chamados e razões sociais. Não publicar em ambiente aberto,
+  não encaminhar para fora da companhia.
+</div>
+<div class="conf val">
+  <b>VERSÃO EM VALIDAÇÃO — uso interno.</b>
+  Os tempos de atuação são <b>estimativas</b> e a meta de SLA é um <b>parâmetro desta tela</b> (campo “Meta”), não um dado do Jira:
+  os campos de SLA de prejuízo do Jira (SLA PREJ COMERCIAL e SLA PREJ POS-TRAVEL) estão vazios em todos os chamados.
+  A tela mostra <b>produtividade individual com nome</b> (LGPD): não encaminhar para fora da companhia.
+</div>
+
+<!-- ============================ VIEW: TEMPO DE ATUACAO ============================ -->
+<section id="view-atu" role="tabpanel" aria-labelledby="tab-atu">
+
+<div class="hdr">
+  <h1>Tempo de atuação por prejuízo</h1>
+  <div class="lead">
+    Estimativa de <b>quanto tempo alguém realmente trabalhou</b> em cada SDPREJ — diferente do tempo corrido, que inclui toda a
+    espera na fila: um chamado pode esperar meses e ser tratado em minutos. O Jira não registra o esforço, então ele é
+    <b>estimado por dois sinais</b>: o <b>ritmo entre ações</b> do analista (tempo desde a ação anterior dele, na mesma sessão de trabalho)
+    e as <b>horas apontadas</b> no Jira (só desde ago/2026). Os dois aparecem lado a lado porque discordam — escolha a fonte abaixo.
+    <span id="u-tot"></span>
+  </div>
+</div>
+
+<div class="controls" role="group" aria-label="Filtros do tempo de atuação">
+  <div><label for="uFonte">Fonte da estimativa</label><select id="uFonte">
+    <option value="ritmo" selected>Ritmo entre ações (todo o período)</option>
+    <option value="ap">Horas apontadas (desde ago/2026)</option>
+    <option value="melhor">Melhor disponível (apontado, senão ritmo)</option></select></div>
+  <div><label for="uLote">Entregas em lote</label><select id="uLote">
+    <option value="0" selected>Excluir da estimativa</option><option value="1">Incluir (contam ~0 min)</option></select></div>
+  <div><label for="uAnalista">Analista</label><select id="uAnalista"><option value="">Todos</option></select></div>
+  <div><label for="uPass">Passagem</label><select id="uPass">
+    <option value="">Todas</option><option value="1">1ª passagem</option><option value="2">Retornos</option></select></div>
+  <div><label for="uAno">Ano da entrega</label><select id="uAno"><option value="">Todos os anos</option></select></div>
+  <div><label for="uTema">Tema</label><select id="uTema"><option value="">Todos</option></select></div>
+  <div><label for="uProduto">Produto</label><select id="uProduto"><option value="">Todos</option></select></div>
+  <div><label for="uBusca">Busca</label><input type="search" id="uBusca" placeholder="chave, resumo…"></div>
+  <div class="sp"></div>
+  <div><button class="btn" id="u-clear">Limpar filtros</button></div>
+</div>
+
+<div class="kpis" id="u-kpis"></div>
+
+<div class="grid">
+  <section class="card">
+    <h2>Tempo de atuação por prejuízo</h2>
+    <div class="cs" id="u-cs-dist"></div>
+    <div class="cw" id="u-ch-dist"></div>
+  </section>
+  <section class="card">
+    <h2>Como cada entrega foi medida</h2>
+    <div class="cs">Nem toda entrega tem estimativa: entrega isolada (sem outra ação vizinha do analista) e entrega em lote não medem esforço.</div>
+    <div class="donutw" id="u-ch-fonte"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Por analista</h2>
+    <div class="cs" id="u-cs-an"><b>Medidas</b> = entregas com estimativa; <b>Cobertura</b> = medidas ÷ entregues; <b>Total</b> = soma do tempo de atuação medido;
+      <b>Corrido</b> = tempo da entrada na análise à entrega, com a fila. Clique na linha para filtrar; o quadro mostra todos os analistas mesmo com um filtrado.</div>
+    <div class="tbl sm">
+      <table class="dt" id="u-an">
+        <thead><tr>
+          <th data-s="nome">Analista<span class="ar">↕</span></th>
+          <th data-s="n" style="text-align:right">Entregues<span class="ar">↕</span></th>
+          <th data-s="m" style="text-align:right">Medidas<span class="ar">↕</span></th>
+          <th data-s="cob" style="text-align:right">Cobertura<span class="ar">↕</span></th>
+          <th data-s="med" style="text-align:right">Mediana<span class="ar">↕</span></th>
+          <th data-s="p90" style="text-align:right">P90<span class="ar">↕</span></th>
+          <th data-s="ate5" style="text-align:right">≤ 5 min<span class="ar">↕</span></th>
+          <th data-s="tot" style="text-align:right">Total<span class="ar">↕</span></th>
+          <th data-s="corr" style="text-align:right">Corrido (mediana)<span class="ar">↕</span></th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Mediana de atuação &middot; por mês de entrega</h2>
+    <div class="cs" id="u-cs-mes"></div>
+    <div class="legend" id="u-lg-mes"></div>
+    <div class="cw" id="u-ch-mes"></div>
+  </section>
+  <section class="card">
+    <h2>Mediana de atuação &middot; por tema</h2>
+    <div class="cs">Top 10 por quantidade de entregas com estimativa; entre parênteses, quantas. Clique para filtrar.</div>
+    <div class="hbars" id="u-ch-tema"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Apontado &times; ritmo</h2>
+    <div class="cs" id="u-cs-cmp"></div>
+    <div class="hbars" id="u-ch-cmp"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Prejuízos tratados</h2>
+    <div class="cs">Uma linha por entrega (passagem pela análise) — clique no cabeçalho para ordenar, na chave para abrir no Jira.</div>
+    <div class="seg" id="uSeg" style="margin-bottom:12px">
+      <button type="button" data-q="" aria-pressed="true">Todas</button>
+      <button type="button" data-q="1" aria-pressed="false">Com estimativa</button>
+      <button type="button" data-q="0" aria-pressed="false">Sem estimativa</button>
+    </div>
+    <div class="tbl">
+      <table class="dt" id="u-dt">
+        <thead><tr>
+          <th data-s="k">Chave<span class="ar">↕</span></th>
+          <th data-s="resumo">Resumo<span class="ar">↕</span></th>
+          <th data-s="analista">Analista<span class="ar">↕</span></th>
+          <th data-s="f">Entrega<span class="ar">↕</span></th>
+          <th data-s="min" style="text-align:right">Tempo corrido<span class="ar">↕</span></th>
+          <th data-s="apS" style="text-align:right">Apontado<span class="ar">↕</span></th>
+          <th data-s="raS" style="text-align:right">Ritmo<span class="ar">↕</span></th>
+          <th data-s="est" style="text-align:right">Estimativa<span class="ar">↕</span></th>
+          <th data-s="fonte">Fonte<span class="ar">↕</span></th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+    <div class="tfoot">
+      <span id="u-count"></span>
+      <span><button class="btn" id="u-more">Mostrar mais 100</button>
+        <button class="btn" id="u-csv">Baixar CSV</button></span>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Fonte: Jira Cloud CVC Corp &middot; histórico (changelog), comentários e apontamento de horas dos chamados de <code id="u-jql"></code><br>
+  <b>Ritmo entre ações</b> = minutos entre a entrega e a ação anterior do mesmo analista em <i>outro</i> chamado (um “salvar” de formulário, uma mudança
+  de etapa ou um comentário), desde que no máximo <b id="u-idle"></b> min antes — a mesma sessão de trabalho. É um <b>limite superior</b> do esforço naquele chamado
+  (o analista pode ter feito outra coisa no intervalo), mas <b>não enxerga</b> entregas isoladas: quem investigou por muito tempo sem outra ação no Jira
+  fica sem medida, então a mediana tende a <b>subestimar</b>. Entrega no mesmo minuto de outra ação (lote) não mede esforço.<br>
+  <b>Horas apontadas</b> = lançamentos de horas (Tempo) iniciados dentro da passagem, ou até 24 h depois da entrega. Vêm em blocos de 15 min e
+  incluem trabalho fora do Jira; o apontamento só é obrigatório desde ago/2026. A autoria do lançamento não é identificável no Jira (aparece como o aplicativo);
+  é atribuído a quem entregou.<br>
+  <b>Total de atuação</b> soma só as entregas com estimativa. <b>Esforço para zerar a fila</b> = tratativas na fila × média de atuação do recorte.<br>
+  <b>Dado pessoal:</b> o quadro por analista mostra produtividade individual com nome (LGPD) — uso local de validação.
+</footer>
+</section>
+
+<!-- ============================ VIEW: TRATATIVA POR ANALISTA ============================ -->
+<section id="view-trat" role="tabpanel" aria-labelledby="tab-trat" hidden>
+
+<div class="hdr">
+  <h1>Tratativa por analista &middot; tempo corrido</h1>
+  <div class="lead">
+    Quanto tempo <b>passa</b> entre a entrada do chamado na etapa
+    <b>análise área responsável</b> e o analista <b>entregá-lo</b> à Conferência — uma <b>tratativa</b>. Esse tempo
+    <b>inclui a espera na fila</b>; para o esforço efetivo, veja a aba <i>Tempo de atuação</i>.
+    Quem entrega é o analista da tratativa. Se o chamado volta da conferência, a nova passagem é outra tratativa
+    (um <i>retorno</i>). Depois da entrega o prazo não é mais da TI. Todo o período —
+    <span id="z-tot"></span> tratativas em <span id="z-chs"></span> chamados.
+  </div>
+</div>
+
+<div class="controls" role="group" aria-label="Filtros da tratativa">
+  <div><label for="zMeta">Meta (dias)</label><input type="number" id="zMeta" min="0.1" max="3650" step="1" value="30"></div>
+  <div><label for="zAnalista">Analista</label><select id="zAnalista"><option value="">Todos</option></select></div>
+  <div><label for="zPass">Passagem</label><select id="zPass">
+    <option value="">Todas</option><option value="1">1ª passagem</option><option value="2">Retornos</option></select></div>
+  <div><label for="zAno">Ano da entrega</label><select id="zAno"><option value="">Todos os anos</option></select></div>
+  <div><label for="zTema">Tema</label><select id="zTema"><option value="">Todos</option></select></div>
+  <div><label for="zProduto">Produto</label><select id="zProduto"><option value="">Todos</option></select></div>
+  <div><label for="zRes">Resultado</label><select id="zRes"><option value="">Todos</option></select></div>
+  <div><label for="zBusca">Busca</label><input type="search" id="zBusca" placeholder="chave, resumo…"></div>
+  <div class="sp"></div>
+  <div><button class="btn" id="z-clear">Limpar filtros</button></div>
+</div>
+
+<div class="kpis" id="z-kpis"></div>
+
+<div class="grid">
+  <section class="card">
+    <h2>Resultado da tratativa</h2>
+    <div class="cs">Cada tratativa em relação à meta. Clique numa fatia ou na legenda para filtrar.</div>
+    <div class="donutw" id="z-ch-res"></div>
+  </section>
+  <section class="card">
+    <h2>Tempo de tratativa</h2>
+    <div class="cs" id="z-cs-dist"></div>
+    <div class="cw" id="z-ch-dist"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Por analista</h2>
+    <div class="cs" id="z-cs-an">Tratativas entregues por quem entregou. Clique na linha para filtrar; o quadro mostra todos os analistas mesmo com um filtrado, para comparar.</div>
+    <div class="tbl sm">
+      <table class="dt" id="z-an">
+        <thead><tr>
+          <th data-s="nome">Analista<span class="ar">↕</span></th>
+          <th data-s="n" style="text-align:right">Entregues<span class="ar">↕</span></th>
+          <th data-s="ok" style="text-align:right">No prazo<span class="ar">↕</span></th>
+          <th data-s="pct" style="text-align:right">% no prazo<span class="ar">↕</span></th>
+          <th data-s="med" style="text-align:right">Mediana<span class="ar">↕</span></th>
+          <th data-s="p90" style="text-align:right">P90<span class="ar">↕</span></th>
+          <th data-s="avg" style="text-align:right">Média<span class="ar">↕</span></th>
+          <th data-s="max" style="text-align:right">Mais lenta<span class="ar">↕</span></th>
+          <th data-s="v" style="text-align:right">Valor R$<span class="ar">↕</span></th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Cumprimento &middot; por mês de entrega</h2>
+    <div class="cs" id="z-cs-mespct"></div>
+    <div class="cw" id="z-ch-mespct"></div>
+  </section>
+  <section class="card">
+    <h2>Tempo de tratativa &middot; por mês de entrega</h2>
+    <div class="cs" id="z-cs-mesdias"></div>
+    <div class="legend" id="z-lg-mes"></div>
+    <div class="cw" id="z-ch-mesdias"></div>
+  </section>
+
+  <section class="card">
+    <h2>1ª passagem &times; retornos</h2>
+    <div class="cs">% das entregues no prazo; entre parênteses, quantas. Retorno é o chamado que voltou da conferência para nova análise.</div>
+    <div class="hbars" id="z-ch-pass"></div>
+  </section>
+  <section class="card">
+    <h2>Cumprimento por tema</h2>
+    <div class="cs">Top 10 por volume de tratativas entregues. Clique para filtrar.</div>
+    <div class="hbars" id="z-ch-tema"></div>
+  </section>
+
+  <section class="card">
+    <h2>Fila aguardando tratativa &middot; frente à meta</h2>
+    <div class="cs" id="z-cs-fila"></div>
+    <div class="hbars" id="z-ch-fila"></div>
+  </section>
+  <section class="card">
+    <h2>Fila aguardando &middot; por tema</h2>
+    <div class="cs">Chamados que estão hoje na etapa de análise, sem entrega. Top 10.</div>
+    <div class="hbars" id="z-ch-filatema"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Maiores esperas na fila</h2>
+    <div class="cs">As 12 tratativas em curso há mais tempo no recorte (ainda sem analista).</div>
+    <div class="tbl sm">
+      <table class="dt" id="z-late">
+        <thead><tr>
+          <th>Chamado</th><th>Resumo</th><th>Tema</th><th>Passagem</th>
+          <th style="text-align:right">Aguardando há</th>
+          <th style="text-align:right">Acima da meta</th>
+          <th style="text-align:right">Valor R$</th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Tratativas</h2>
+    <div class="cs">Uma linha por passagem do chamado pela análise — clique no cabeçalho para ordenar, na chave para abrir no Jira.</div>
+    <div class="seg" id="zSeg" style="margin-bottom:12px">
+      <button type="button" data-q="" aria-pressed="true">Todas</button>
+      <button type="button" data-q="1" aria-pressed="false">Entregues</button>
+      <button type="button" data-q="0" aria-pressed="false">Em curso</button>
+    </div>
+    <div class="tbl">
+      <table class="dt" id="z-dt">
+        <thead><tr>
+          <th data-s="k">Chave<span class="ar">↕</span></th>
+          <th data-s="resumo">Resumo<span class="ar">↕</span></th>
+          <th data-s="analista">Analista<span class="ar">↕</span></th>
+          <th data-s="n" style="text-align:right">Passagem<span class="ar">↕</span></th>
+          <th data-s="i">Entrada<span class="ar">↕</span></th>
+          <th data-s="f">Entrega<span class="ar">↕</span></th>
+          <th data-s="min" style="text-align:right">Tempo<span class="ar">↕</span></th>
+          <th data-s="cls">Resultado<span class="ar">↕</span></th>
+          <th data-s="v" style="text-align:right">Valor R$<span class="ar">↕</span></th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+    <div class="tfoot">
+      <span id="z-count"></span>
+      <span><button class="btn" id="z-more">Mostrar mais 100</button>
+        <button class="btn" id="z-csv">Baixar CSV</button></span>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Fonte: Jira Cloud CVC Corp &middot; histórico de status (changelog) dos chamados de <code id="z-jql"></code><br>
+  <b>Tratativa</b> = tempo corrido entre a entrada do chamado na etapa <i>análise área responsável</i> (criação, ou a volta da
+  conferência) e a saída dela. Auto-transições (a etapa voltando para ela mesma) não contam como saída. <b>Analista</b> = quem executou
+  a saída, como no painel de prejuízo. Tratativa em curso é medida até a data da extração e não tem analista.<br>
+  <b>Meta:</b> parâmetro desta tela, não dado do Jira (os campos de SLA de prejuízo estão vazios).
+  <b>Mediana</b> pelo elemento central superior (convenção do painel de prejuízo); <b>P90</b> = valor abaixo do qual ficam 90% das tratativas.
+  Tempo corrido: inclui noites, fins de semana e feriados.<br>
+  <b>Dado pessoal:</b> esta tela mostra produtividade individual com nome (LGPD). Uso local de validação — antes de qualquer publicação,
+  decidir como tratar os nomes.
+</footer>
+</section>
+
+<!-- ============================ VIEW: CAPACIDADE POR DIA ============================ -->
+<section id="view-cap" role="tabpanel" aria-labelledby="tab-cap" hidden>
+
+<div class="hdr">
+  <h1>Capacidade de tratativa por dia</h1>
+  <div class="lead">
+    Quantos SDPREJs a TI <b>consegue tratar por dia</b> — chamados entregues à Conferência —, medido no <b>ritmo real</b>
+    da janela escolhida, e o que isso significa para a <b>fila de hoje</b>: contra quantos chegam por dia, <b>quando ela zera</b>
+    e qual ritmo seria preciso para zerá-la no prazo que você definir. A janela termina no dia anterior à extração.
+  </div>
+</div>
+
+<div class="controls" role="group" aria-label="Filtros da capacidade">
+  <div><label for="cJanela">Janela de cálculo</label><select id="cJanela">
+    <option value="30">Últimos 30 dias</option><option value="60">Últimos 60 dias</option>
+    <option value="90" selected>Últimos 90 dias</option><option value="180">Últimos 180 dias</option>
+    <option value="365">Últimos 365 dias</option></select></div>
+  <div><label for="cBase">Base de dias</label>
+    <div class="seg" id="cBase">
+      <button type="button" data-b="u" aria-pressed="true">Dias úteis</button>
+      <button type="button" data-b="c" aria-pressed="false">Dias corridos</button>
+    </div></div>
+  <div><label for="cDias">Prazo para zerar a fila (dias)</label><input type="number" id="cDias" min="1" max="3650" step="1" value="60"></div>
+  <div class="sp"></div>
+  <div><button class="btn" id="c-clear">Restaurar padrão</button></div>
+</div>
+
+<div class="kpis" id="c-kpis"></div>
+
+<div class="grid">
+  <section class="card wide">
+    <h2>Ritmo por janela &middot; quando a fila zera</h2>
+    <div class="cs" id="c-cs-jan"></div>
+    <div class="tbl sm">
+      <table class="dt" id="c-jan">
+        <thead><tr>
+          <th>Janela</th>
+          <th style="text-align:right">Dias</th>
+          <th style="text-align:right">Entregas</th>
+          <th style="text-align:right">Entregas / dia</th>
+          <th style="text-align:right">Mediana / dia</th>
+          <th style="text-align:right">Chegadas / dia</th>
+          <th style="text-align:right">Saldo / dia</th>
+          <th style="text-align:right">Fila zera em</th>
+          <th>Data prevista</th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 id="c-h-dia">Entregas por dia</h2>
+    <div class="cs" id="c-cs-dia"></div>
+    <div class="cw" id="c-ch-dia"></div>
+  </section>
+  <section class="card">
+    <h2>Entregas &times; chegadas</h2>
+    <div class="cs" id="c-cs-mm"></div>
+    <div class="legend" id="c-lg-mm"></div>
+    <div class="cw" id="c-ch-mm"></div>
+  </section>
+
+  <section class="card">
+    <h2>Entregas por dia da semana</h2>
+    <div class="cs">Média de entregas em cada dia da semana dentro da janela.</div>
+    <div class="cw" id="c-ch-sem"></div>
+  </section>
+  <section class="card">
+    <h2>Quantos dias entregaram quanto</h2>
+    <div class="cs" id="c-cs-hist"></div>
+    <div class="cw" id="c-ch-hist"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Capacidade por analista</h2>
+    <div class="cs" id="c-cs-an"></div>
+    <div class="tbl sm">
+      <table class="dt" id="c-an">
+        <thead><tr>
+          <th data-s="nome">Analista<span class="ar">↕</span></th>
+          <th data-s="n" style="text-align:right">Entregas<span class="ar">↕</span></th>
+          <th data-s="dias" style="text-align:right">Dias com entrega<span class="ar">↕</span></th>
+          <th data-s="porDia" style="text-align:right">Por dia da janela<span class="ar">↕</span></th>
+          <th data-s="porAtivo" style="text-align:right">Por dia com entrega<span class="ar">↕</span></th>
+          <th data-s="max" style="text-align:right">Maior dia<span class="ar">↕</span></th>
+          <th data-s="part" style="text-align:right">% da equipe<span class="ar">↕</span></th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Dia a dia</h2>
+    <div class="cs">Um dia por linha, do mais recente para o mais antigo. Clique no cabeçalho para ordenar.</div>
+    <div class="tbl">
+      <table class="dt" id="c-dt">
+        <thead><tr>
+          <th data-s="d">Data<span class="ar">↕</span></th>
+          <th data-s="dow">Dia<span class="ar">↕</span></th>
+          <th data-s="e" style="text-align:right">Entregas<span class="ar">↕</span></th>
+          <th data-s="c" style="text-align:right">Chegadas<span class="ar">↕</span></th>
+          <th data-s="saldo" style="text-align:right">Saldo<span class="ar">↕</span></th>
+          <th data-s="na" style="text-align:right">Analistas<span class="ar">↕</span></th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+    <div class="tfoot">
+      <span id="c-count"></span>
+      <span><button class="btn" id="c-more">Mostrar mais 100</button>
+        <button class="btn" id="c-csv">Baixar CSV</button></span>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Fonte: Jira Cloud CVC Corp &middot; histórico de status dos chamados de <code id="c-jql"></code><br>
+  <b>Entrega</b> = o analista move o chamado da análise para a Conferência. <b>Chegada</b> = o chamado entra na análise
+  (chamado novo ou retorno da conferência). <b>Dia útil</b> = segunda a sexta; feriados não são descontados.<br>
+  <b>Capacidade</b> aqui é o <b>ritmo observado</b> na janela, não uma medida de capacidade máxima: reflete quantos analistas estavam
+  ativos e como trabalharam naquele período. Entregas em lote (vários chamados movidos no mesmo dia) puxam a média — por isso a
+  tela mostra também a mediana.<br>
+  <b>Fila zera em</b> = fila de hoje ÷ (entregas por dia − chegadas por dia), supondo que os dois ritmos se mantêm. Se entram mais
+  do que saem, a fila não zera nesse ritmo. <b>Ritmo para zerar</b> = fila ÷ prazo + chegadas por dia.<br>
+  <b>Dado pessoal:</b> o quadro por analista mostra produtividade individual com nome (LGPD) — uso local de validação.
+</footer>
+</section>
+
+<!-- ============================ VIEW: CICLO DO CHAMADO ============================ -->
+<section id="view-sla" role="tabpanel" aria-labelledby="tab-sla" hidden>
+
+<div class="hdr">
+  <h1>SLA de atendimento até o fim do ciclo</h1>
+  <div class="lead">
+    Tempo, em dias corridos, entre a <b>abertura</b> do chamado de prejuízo e o seu <b>encerramento</b> (data de
+    resolução no Jira), em <b>todo o período</b> — <span id="s-tot"></span> chamados, em aberto e encerrados.
+    O chamado <b>cumpre o SLA</b> quando o ciclo fecha em até a <b>meta</b>. Chamado ainda aberto é medido até a
+    data da extração: fica <i>em curso</i> dentro da meta ou <i>vencido</i> depois dela.
+  </div>
+</div>
+
+<div class="controls" role="group" aria-label="Filtros do SLA">
+  <div><label for="sMeta">Meta (dias)</label><input type="number" id="sMeta" min="1" max="3650" step="1" value="90"></div>
+  <div><label for="sTema">Tema</label><select id="sTema"><option value="">Todos</option></select></div>
+  <div><label for="sProduto">Produto</label><select id="sProduto"><option value="">Todos</option></select></div>
+  <div><label for="sNat">Natureza</label><select id="sNat"><option value="">Todas</option></select></div>
+  <div><label for="sArea">Área identificadora</label><select id="sArea"><option value="">Todas</option></select></div>
+  <div><label for="sAno">Ano de abertura</label><select id="sAno"><option value="">Todos os anos</option></select></div>
+  <div><label for="sRes">Resultado</label><select id="sRes"><option value="">Todos</option></select></div>
+  <div><label for="sBusca">Busca</label><input type="search" id="sBusca" placeholder="chave, resumo…"></div>
+  <div class="sp"></div>
+  <div><button class="btn" id="s-clear">Limpar filtros</button></div>
+</div>
+
+<div class="kpis" id="s-kpis"></div>
+
+<div class="grid">
+  <section class="card">
+    <h2>Resultado do SLA</h2>
+    <div class="cs">Como cada chamado do recorte está em relação à meta. Clique numa fatia ou na legenda para filtrar.</div>
+    <div class="donutw" id="s-ch-res"></div>
+  </section>
+  <section class="card">
+    <h2>Tempo de ciclo dos encerrados</h2>
+    <div class="cs" id="s-cs-dist">Quantos chamados fecharam em cada faixa de dias entre a abertura e o encerramento.</div>
+    <div class="cw" id="s-ch-dist"></div>
+  </section>
+
+  <section class="card">
+    <h2>Cumprimento do SLA &middot; por mês de encerramento</h2>
+    <div class="cs" id="s-cs-mespct"></div>
+    <div class="cw" id="s-ch-mespct"></div>
+  </section>
+  <section class="card">
+    <h2>Tempo de ciclo &middot; por mês de encerramento</h2>
+    <div class="cs" id="s-cs-mesdias"></div>
+    <div class="legend" id="s-lg-mes"></div>
+    <div class="cw" id="s-ch-mesdias"></div>
+  </section>
+
+  <section class="card">
+    <h2>Cumprimento por tema</h2>
+    <div class="cs">% dos encerrados no prazo; entre parênteses, quantos encerrados. Top 10 por volume. Clique para filtrar.</div>
+    <div class="hbars" id="s-ch-tema"></div>
+  </section>
+  <section class="card">
+    <h2>Cumprimento por área identificadora</h2>
+    <div class="cs">Onde o chamado nasce, não onde ele trava. Top 10 por volume. Clique para filtrar.</div>
+    <div class="hbars" id="s-ch-area"></div>
+  </section>
+  <section class="card">
+    <h2>Cumprimento por produto</h2>
+    <div class="cs">Produto inferido do resumo do chamado. Clique para filtrar.</div>
+    <div class="hbars" id="s-ch-prod"></div>
+  </section>
+  <section class="card">
+    <h2>Cumprimento por natureza</h2>
+    <div class="cs">Técnico vs. não-técnico — classificação proposta por tema, ainda em validação.</div>
+    <div class="hbars" id="s-ch-nat"></div>
+  </section>
+
+  <section class="card">
+    <h2>Backlog em aberto &middot; frente à meta</h2>
+    <div class="cs" id="s-cs-back">Chamados ainda abertos, pela idade em múltiplos da meta.</div>
+    <div class="hbars" id="s-ch-back"></div>
+  </section>
+  <section class="card">
+    <h2>Em aberto por ano de abertura</h2>
+    <div class="cs">Quanto do backlog atual nasceu em cada ano — a cauda longa de chamados antigos.</div>
+    <div class="cw" id="s-ch-ano"></div>
+  </section>
+
+  <section class="card wide">
+    <h2>Maiores atrasos em aberto</h2>
+    <div class="cs">Os 12 chamados abertos há mais tempo no recorte, com quanto passaram da meta.</div>
+    <div class="tbl sm">
+      <table class="dt" id="s-late">
+        <thead><tr>
+          <th>Chamado</th><th>Resumo</th><th>Tema</th><th>Status</th>
+          <th style="text-align:right">Aberto há (dias)</th>
+          <th style="text-align:right">Acima da meta</th>
+          <th style="text-align:right">Valor R$</th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card wide">
+    <h2>Chamados</h2>
+    <div class="cs">Visão tabular do recorte — clique no cabeçalho para ordenar, na chave para abrir no Jira.</div>
+    <div class="seg" id="sSeg" style="margin-bottom:12px">
+      <button type="button" data-q="" aria-pressed="true">Todos</button>
+      <button type="button" data-q="1" aria-pressed="false">Encerrados</button>
+      <button type="button" data-q="0" aria-pressed="false">Em aberto</button>
+    </div>
+    <div class="tbl">
+      <table class="dt" id="s-dt">
+        <thead><tr>
+          <th data-s="k">Chave<span class="ar">↕</span></th>
+          <th data-s="m">Resumo<span class="ar">↕</span></th>
+          <th data-s="tema">Tema<span class="ar">↕</span></th>
+          <th data-s="status">Status<span class="ar">↕</span></th>
+          <th data-s="c">Criado<span class="ar">↕</span></th>
+          <th data-s="r">Encerrado<span class="ar">↕</span></th>
+          <th data-s="ciclo">Ciclo (dias)<span class="ar">↕</span></th>
+          <th data-s="cls">Resultado<span class="ar">↕</span></th>
+          <th data-s="v">Valor R$<span class="ar">↕</span></th>
+        </tr></thead><tbody></tbody>
+      </table>
+    </div>
+    <div class="tfoot">
+      <span id="s-count"></span>
+      <span><button class="btn" id="s-more">Mostrar mais 100</button>
+        <button class="btn" id="s-csv">Baixar CSV</button></span>
+    </div>
+  </section>
+</div>
+
+<footer>
+  Fonte: Jira Cloud CVC Corp &middot; <code id="s-jql"></code><br>
+  <b>Ciclo</b> = dias corridos entre a data de criação e a data de resolução (<code>resolutiondate</code>) do chamado;
+  em aberto, até a data da extração. <b>Cumprimento</b> = encerrados com ciclo ≤ meta ÷ total de encerrados.
+  A <b>mediana</b> usa o elemento central superior (mesma convenção do painel de prejuízo) e o <b>P90</b> o valor abaixo do qual
+  ficam 90% dos chamados.<br>
+  <b>Meta:</b> parâmetro desta tela. Os campos de SLA do Jira para prejuízo (<i>SLA PREJ COMERCIAL</i>, <i>SLA PREJ POS-TRAVEL</i>,
+  <i>Time to resolution</i>) estão vazios em todos os chamados, e o Service Desk não devolve SLA para eles — por isso o SLA é calculado.
+  Tema, produto e natureza são derivados do resumo, como no painel de prejuízo.
+</footer>
+</section>
+
+</div>
+</main>
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+@@DATA@@
+@@JS@@
+</script>
+</body>
+</html>
