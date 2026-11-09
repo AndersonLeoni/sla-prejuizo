@@ -7,8 +7,9 @@ Este repositório guarda as peças; `build-sla.js` monta.
 > **Este repositório guarda só o código.** Os dados extraídos (`data/`) e o HTML montado (`dist/`) trazem **nome de
 > colaborador com métrica individual de produtividade (LGPD)**, valor de prejuízo, chaves de chamado e resumos com
 > localizadores de reserva. Estão no `.gitignore` desde o primeiro commit: uma vez comitado, o dado fica no histórico do git
-> para sempre, e apagar o arquivo depois **não resolve**. **Não publique o HTML em GitHub Pages** — no plano gratuito o site é
-> sempre público. Para mostrar a alguém, envie o arquivo (veja “Enviar a tela”).
+> para sempre, e apagar o arquivo depois **não resolve**. **Não publique o HTML completo (`dist/`) em GitHub Pages** — no plano
+> gratuito o site é sempre público. O que pode ir ao Pages é só a **versão anonimizada** em `docs/` (veja “Publicar no GitHub Pages”).
+> Para mostrar a versão completa a alguém, envie o arquivo (veja “Enviar a tela”).
 
 ## As telas
 
@@ -31,6 +32,7 @@ run-sla.cmd                  extrai do Jira e monta dist\SLA_Painel.html   (~3 m
 node extract/sla.js          só extrai       -> data/sla.json
 node build-sla.js            só monta        -> dist/SLA_Painel.html
 node build-sla.js --envio    versão para mandar a outra pessoa -> dist/SLA_Prejuizo_AAAA-MM-DD.html
+node build-sla.js --publico  versão ANONIMIZADA para o GitHub Pages -> docs/index.html
 node verify.js               confere o payload (não fala com o Jira)
 ```
 
@@ -41,6 +43,26 @@ O token é gerado em <https://id.atlassian.com/manage-profile/security/api-token
 `node build-sla.js --envio` gera o arquivo datado, sem o link “Painel de prejuízo” (que aponta para um arquivo que quem recebe não tem).
 Mande por Teams, e-mail ou OneDrive. **HTML em SharePoint/Teams é baixado, não renderizado** (a biblioteca de documentos desativa script):
 quem recebe baixa e abre local.
+
+## Publicar no GitHub Pages (versão anonimizada)
+
+`node build-sla.js --publico` monta `docs/index.html` a partir de `data/sla.json` trocando o que identifica:
+analistas viram “Analista NN”, chaves viram “CH-n” (sem link para o Jira), resumos são omitidos, valores em R$ não aparecem
+e a JQL é omitida. Ficam só métricas agregadas (contagens, datas, tempos, tema/produto/natureza/área/status).
+O build **aborta (código 3)** se, depois de montado, ainda achar nome de analista, `SDPREJ-`, domínio do Jira, e-mail corporativo ou JQL no HTML.
+
+Primeira vez: no GitHub, **Settings → Pages → Build and deployment → Deploy from a branch → `main` / `/docs`**
+(se o deploy inicial usou `/ (root)`, ele publica o README; trocar para `/docs` corrige). A cada atualização:
+
+```
+run-sla.cmd                  (ou node extract/sla.js) atualiza os dados
+node build-sla.js --publico
+git add docs && git commit -m "docs: atualiza painel publico" && git push
+```
+
+Só `docs/` é versionado; `data/` e `dist/` continuam no `.gitignore`. **Limite conhecido:** o código “Analista NN” esconde o nome, mas é
+produtividade individual pseudonimizada (LGPD segue valendo) — em time pequeno, quem conhece os volumes pode reconhecer a pessoa.
+Se isso for um problema, o próximo passo é ocultar o quadro por analista na versão pública.
 
 ## Como o SLA é medido
 

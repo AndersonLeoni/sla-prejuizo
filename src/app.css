@@ -423,3 +423,93 @@ input[type=number]{font:inherit;font-size:13px;color:var(--text-primary);backgro
 .conf.val b{color:var(--text-primary)}
 @media (max-width:980px){.side-toggle{display:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* =====================================================================
+   Refino visual (referencias: Media Kit + Manufacturing Dashboard).
+   ADITIVO e so aparencia: vidro fosco (glass), brilho suave na cor da marca,
+   bordas arredondadas maiores, faixa de KPIs com anel de progresso.
+   Cores continuam as da marca CVC/Trend (variaveis acima); nada de cor nova.
+   ===================================================================== */
+body{background:
+  radial-gradient(900px 480px at 88% -8%,color-mix(in srgb,var(--brand-blue) 16%,transparent),transparent 70%),
+  radial-gradient(760px 420px at -6% 24%,color-mix(in srgb,var(--brand-indigo) 9%,transparent),transparent 70%),
+  var(--plane);background-attachment:fixed}
+:root[data-theme="dark"] body{background:
+  radial-gradient(900px 520px at 88% -8%,rgba(59,155,224,.20),transparent 70%),
+  radial-gradient(760px 460px at -6% 30%,rgba(132,120,245,.14),transparent 70%),
+  var(--plane);background-attachment:fixed}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) body{background:
+    radial-gradient(900px 520px at 88% -8%,rgba(59,155,224,.20),transparent 70%),
+    radial-gradient(760px 460px at -6% 30%,rgba(132,120,245,.14),transparent 70%),
+    var(--plane);background-attachment:fixed}
+}
+
+/* vidro: cartoes, filtros, tabelas */
+.card,.controls,.tbl,.conf{
+  background:color-mix(in srgb,var(--surface-1) 78%,transparent);
+  -webkit-backdrop-filter:blur(14px) saturate(1.15);backdrop-filter:blur(14px) saturate(1.15);
+  border:1px solid color-mix(in srgb,var(--series-1) 16%,var(--border));
+  box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 10px 30px -14px rgba(10,74,150,.28)}
+.conf{border-left:3px solid var(--critical)}
+.conf.val{border-left-color:var(--warning)}
+.card{border-radius:22px;padding:20px 22px 22px}
+.card:hover{box-shadow:0 1px 0 rgba(255,255,255,.35) inset,0 18px 40px -16px rgba(10,74,150,.4);
+  border-color:color-mix(in srgb,var(--series-1) 32%,var(--border))}
+.card h2{display:flex;align-items:center;gap:9px;font-size:15.5px}
+.card h2::before{content:'';width:4px;height:17px;border-radius:3px;flex:none;
+  background:linear-gradient(180deg,var(--brand-yellow),var(--series-1))}
+.tbl{border-radius:16px}
+
+/* titulo da visao */
+.hdr h1{font-size:30px;font-weight:700;letter-spacing:-0.03em;
+  background:linear-gradient(90deg,var(--text-primary) 55%,var(--series-1));
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+.hdr h1::after{content:'';display:block;width:54px;height:4px;border-radius:3px;margin-top:10px;
+  background:linear-gradient(90deg,var(--brand-yellow),var(--series-1))}
+
+/* faixa de KPIs ("At a glance"): um painel de vidro com os cartoes dentro */
+.main .kpis{grid-template-columns:repeat(auto-fit,minmax(158px,1fr));padding:14px;gap:12px;border-radius:26px;
+  background:color-mix(in srgb,var(--surface-1) 55%,transparent);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  border:1px solid color-mix(in srgb,var(--series-1) 20%,var(--border));
+  box-shadow:0 14px 38px -18px rgba(10,74,150,.4)}
+.main .tile{border-radius:18px;padding:16px 16px 15px}
+.main .tile:not(.f1):not(.f2){background:color-mix(in srgb,var(--surface-1) 86%,transparent);
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset}
+.main .tile:hover{box-shadow:0 14px 30px -12px color-mix(in srgb,var(--series-1) 55%,transparent)}
+.main .tile.f1:hover{box-shadow:0 16px 32px -10px rgba(11,109,181,.65)}
+.main .tile.f2:hover{box-shadow:0 16px 32px -10px rgba(255,213,0,.6)}
+.main .tile .k{font-size:10px}
+.main .tile .v{font-weight:700}
+.tile.alert{border-color:color-mix(in srgb,var(--critical) 45%,var(--border));
+  background:color-mix(in srgb,var(--critical) 8%,var(--surface-1))}
+
+/* anel de progresso nos cartoes de percentual (classe e --pct postos pelo shared.js) */
+.tile.ring{padding-right:70px}
+.tile{--rc:var(--series-1)}
+.tile .rg{display:block;position:absolute;right:12px;top:16px;width:46px;height:46px;border-radius:50%;
+  background:conic-gradient(var(--rc) var(--p),color-mix(in srgb,var(--rc) 18%,transparent) 0);
+  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+          mask:radial-gradient(farthest-side,transparent calc(100% - 6px),#000 calc(100% - 5px));
+  z-index:1}
+.tile.f1 .rg{--rc:#fff}
+.tile.f2 .rg{--rc:#27292a}
+
+/* barras horizontais: trilho + preenchimento em degrade */
+.htrack{background:var(--seq-0);border-radius:999px;overflow:hidden;height:14px}
+.hfill{border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb,var(--series-1) 70%,#fff),var(--series-1))}
+.hrow{border-radius:10px;padding:4px 6px}
+.hrow.on{box-shadow:inset 3px 0 0 var(--brand-yellow)}
+
+/* rosca com brilho leve */
+.donutw svg{filter:drop-shadow(0 6px 14px color-mix(in srgb,var(--series-1) 30%,transparent))}
+.dli{border-radius:12px}
+
+/* abas, botoes e campos mais macios */
+.btn,select,input[type=search],input[type=number]{border-radius:12px}
+.seg{border-radius:12px}
+table.dt th{background:color-mix(in srgb,var(--plane) 85%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+table.dt tr:hover td{background:color-mix(in srgb,var(--series-1) 8%,transparent)}
+.side{box-shadow:6px 0 28px -12px rgba(10,58,99,.55)}
+@media print{body{background:#fff}.card,.controls,.tbl,.main .kpis{backdrop-filter:none;box-shadow:none}}

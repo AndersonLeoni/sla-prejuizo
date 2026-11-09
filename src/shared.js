@@ -308,6 +308,17 @@ function iniciarShell(){
     function decorar(c){
       const tiles=[...c.children].filter(e=>e.classList.contains('tile'));
       if(c.id!=='t-kpis-tipo') tiles.slice(0,2).forEach((t,i)=>t.classList.add(i?'f2':'f1'));
+      /* anel de progresso nos cartoes cujo valor e um percentual ("87,3%"). Vem ANTES da contagem
+         animada, que troca o texto por "0%" no primeiro quadro. */
+      tiles.forEach(t=>{
+        const v=t.querySelector('.v'), m=v&&v.textContent.trim().match(/^(\d+(?:,\d+)?)\s*%$/);
+        const velho=t.querySelector(':scope>.rg');
+        if(!m){ if(velho){velho.remove(); t.classList.remove('ring');} return; }
+        const r=velho||document.createElement('i');
+        r.className='rg'; r.setAttribute('aria-hidden','true');
+        r.style.setProperty('--p',Math.min(100,parseFloat(m[1].replace(',','.')))+'%');
+        if(!velho){ t.appendChild(r); t.classList.add('ring'); }
+      });
       tiles.forEach((t,i)=>{const v=t.querySelector('.v'); if(v) contar(v,c.id+i);});
     }
     const obs=new MutationObserver(ms=>ms.forEach(m=>decorar(m.target)));

@@ -8,6 +8,7 @@
 # ---------------------------------------------------------------------------
 data/
 dist/
+# docs/ (GitHub Pages) NAO e ignorado: so recebe a versao anonimizada de `node build-sla.js --publico`.
 
 # credenciais
 config.json
