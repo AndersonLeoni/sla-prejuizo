@@ -92,3 +92,6 @@ Extraído do painel de prejuízo SDPREJ (repositório `sdprej-trend`), do qual c
 - **Autor do apontamento de horas** não identifica a pessoa (aparece como o aplicativo de apontamento).
 - **Comentários** vêm limitados pelo Jira na busca; chamado com muitos comentários pode ter atividade a menos.
 - **Tema e produto** são inferidos do resumo do chamado (não existem como campo); chamados antigos têm mais “não identificado”.
+
+
+Implementar visualização aprimorada
